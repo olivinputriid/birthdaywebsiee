@@ -1,0 +1,1 @@
+- Guestbook wishes live in the public `wishes` table (anyone can read/insert, no sign-in) and render via `WishWall` under the static sticky notes; keeps the birthday page open to all guests.
