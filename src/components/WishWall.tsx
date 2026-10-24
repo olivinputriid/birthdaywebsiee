@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getStoredWishes, Wish, addWish } from "@/lib/wishes-store";
+import { getStoredWishes, Wish, addWish, refreshWishes } from "@/lib/wishes-store";
 
 const TAPES = ["bg-primary-container/40", "bg-secondary-fixed/50", "bg-tertiary-fixed/40"];
 const NAMES = ["text-primary", "text-secondary", "text-tertiary"];
@@ -18,7 +18,7 @@ export function WishWall() {
   const [wishes, setWishes] = useState<Wish[]>([]);
 
   useEffect(() => {
-    setWishes(getStoredWishes());
+    refreshWishes().then(setWishes);
     const handleUpdate = () => setWishes(getStoredWishes());
     window.addEventListener("wishes-updated", handleUpdate);
     return () => window.removeEventListener("wishes-updated", handleUpdate);

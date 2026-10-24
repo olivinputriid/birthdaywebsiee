@@ -4,6 +4,7 @@ import { burstEmoji, burstDots } from "@/lib/sparkles";
 import {
   Wish,
   getStoredWishes,
+  refreshWishes,
   addWish,
   updateWishReaction,
   compressImageFile,
@@ -63,7 +64,7 @@ function WishesPage() {
 
   // Load wishes
   useEffect(() => {
-    setWishes(getStoredWishes());
+    refreshWishes().then(setWishes);
     const handleWishesUpdate = () => {
       setWishes(getStoredWishes());
     };
