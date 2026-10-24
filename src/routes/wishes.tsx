@@ -28,7 +28,11 @@ export const Route = createFileRoute("/wishes")({
 });
 
 const DEFAULT_PHOTO =
-  "jeje1.png";
+  "favicon.ico";
+
+const OLD_DEFAULT_PHOTO = "https://lh3.googleusercontent.com/aida-public/AB6AXuCQ0fpnhasZKD4BCI3PEFt-CdgI27JmLi0tjr5jtueGN_K5aRj1MEgx2BDeLZg04hFvY7OPTohMvcjg4TY8CzNwJy9moGR9f0_jmDzY1NyE-UM97gk5jMRZIZvJ1RQBMZnEPOKlcAmL5TBwk_kKWHVuHt8oGHonEctvIi3pjJinaY2gK2qOhFG64gBYcWuCdyDpN7JLTDCyr6erSzl8vbPzMPoYdC7wvn9G4zegszJ49vN7PBoM6xoU";
+
+                        
 
 const TAPES = [
   "bg-primary-container/40 -rotate-2 left-10",
@@ -239,11 +243,17 @@ function WishesPage() {
                           className={`w-full max-w-[260px] bg-surface-container-lowest p-3 pb-8 rounded-2xl shadow-sm ${TILTS[currentIndex % TILTS.length]} transition-transform duration-300 hover:rotate-0 flex flex-col items-center`}
                         >
                           <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-container">
-                            <img
-                              alt={`Foto kenangan dari ${activeWish.name}`}
-                              className="w-full h-full object-cover"
-                              src={activeWish.photo || DEFAULT_PHOTO}
-                            />
+                         
+
+                        <img
+                          alt={`Foto kenangan dari ${activeWish.name}`}
+                          className="w-full h-full object-cover"
+                          src={
+                            !activeWish.photo || activeWish.photo === OLD_DEFAULT_PHOTO 
+                              ? DEFAULT_PHOTO 
+                              : activeWish.photo
+                          }
+                        />
                             <div className="absolute top-2 right-2 bg-surface-container-lowest/80 backdrop-blur-sm rounded-full p-1 shadow-xs">
                               <span className="material-symbols-outlined text-primary text-sm">stars</span>
                             </div>
