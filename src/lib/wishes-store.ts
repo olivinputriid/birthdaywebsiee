@@ -11,69 +11,78 @@ export interface Wish {
   };
 }
 
-const STORAGE_KEY = "jeje_birthday_wishes_v1";
+import { createWish, listWishes, reactToWish } from "./wishes.functions";
+
+// Wishes used to be kept only in this browser's localStorage; any left there are
+// uploaded once so they show up on every device.
+const LEGACY_STORAGE_KEY = "jeje_birthday_wishes_v1";
+
+let cache: Wish[] = [];
+
+function emitUpdate(): void {
+  window.dispatchEvent(new CustomEvent("wishes-updated", { detail: cache }));
+}
 
 export function getStoredWishes(): Wish[] {
-  if (typeof window === "undefined") return [];
+  return cache;
+}
+
+async function uploadLegacyWishes(): Promise<void> {
+  const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!raw) return;
+  let legacy: Wish[] = [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    console.error("Failed to load wishes from storage:", e);
-    return [];
+    if (Array.isArray(parsed)) legacy = parsed;
+  } catch {
+    // Unreadable data; nothing to recover.
   }
+  // Oldest first so they keep their original order on the wall.
+  for (const w of [...legacy].reverse()) {
+    if (!w?.name?.trim() || !w?.message?.trim()) continue;
+    await createWish({
+      data: { name: w.name, message: w.message, photo: w.photo ?? null, createdAt: w.created_at },
+    });
+  }
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
 }
 
-export function saveWishes(wishes: Wish[]): void {
-  if (typeof window === "undefined") return;
+let legacyUpload: Promise<void> | null = null;
+
+export async function refreshWishes(): Promise<Wish[]> {
+  if (typeof window === "undefined") return cache;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(wishes));
-    window.dispatchEvent(new CustomEvent("wishes-updated", { detail: wishes }));
+    legacyUpload ??= uploadLegacyWishes().catch((e) => {
+      legacyUpload = null;
+      console.error("Failed to upload locally saved wishes:", e);
+    });
+    await legacyUpload;
+    cache = await listWishes();
+    emitUpdate();
   } catch (e) {
-    console.error("Failed to save wishes to storage:", e);
+    console.error("Failed to load wishes:", e);
   }
+  return cache;
 }
 
-export async function addWish(name: string, message: string, photo?: string | null): Promise<Wish> {
-  const newWish: Wish = {
-    id: "wish_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-    name: name.trim(),
-    message: message.trim(),
-    photo: photo || null,
-    created_at: new Date().toISOString(),
-    reactions: {
-      favorite: 1,
-      celebration: 0,
-      smile: 0,
-    },
-  };
-
-  const existing = getStoredWishes();
-  const updated = [newWish, ...existing];
-  saveWishes(updated);
-  return newWish;
+export async function addWish(name: string, message: string, photo?: string | null): Promise<void> {
+  await createWish({ data: { name, message, photo: photo || null } });
+  await refreshWishes();
 }
 
 export function updateWishReaction(
   wishId: string,
   reactionType: "favorite" | "celebration" | "smile",
 ): void {
-  const existing = getStoredWishes();
-  const index = existing.findIndex((w) => w.id === wishId);
-  if (index === -1) return;
-
-  const currentCount = existing[index].reactions?.[reactionType] ?? 0;
-  existing[index] = {
-    ...existing[index],
-    reactions: {
-      ...existing[index].reactions,
-      [reactionType]: currentCount + 1,
-    },
-  };
-
-  saveWishes(existing);
+  cache = cache.map((w) =>
+    w.id === wishId
+      ? { ...w, reactions: { ...w.reactions, [reactionType]: (w.reactions?.[reactionType] ?? 0) + 1 } }
+      : w,
+  );
+  emitUpdate();
+  reactToWish({ data: { id: wishId, type: reactionType } }).catch((e) =>
+    console.error("Failed to save reaction:", e),
+  );
 }
 
 export function compressImageFile(
