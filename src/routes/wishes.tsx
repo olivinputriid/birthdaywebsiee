@@ -28,7 +28,7 @@ export const Route = createFileRoute("/wishes")({
 });
 
 const DEFAULT_PHOTO =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCQ0fpnhasZKD4BCI3PEFt-CdgI27JmLi0tjr5jtueGN_K5aRj1MEgx2BDeLZg04hFvY7OPTohMvcjg4TY8CzNwJy9moGR9f0_jmDzY1NyE-UM97gk5jMRZIZvJ1RQBMZnEPOKlcAmL5TBwk_kKWHVuHt8oGHonEctvIi3pjJinaY2gK2qOhFG64gBYcWuCdyDpN7JLTDCyr6erSzl8vbPzMPoYdC7wvn9G4zegszJ49vN7PBoM6xoU";
+  "jeje1.png";
 
 const TAPES = [
   "bg-primary-container/40 -rotate-2 left-10",
